@@ -1,20 +1,67 @@
-import React from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import AuthActions from '../../store/ducks/auth';
 
 import { Button, Container, Form, Logo } from './styles';
 import logo from '../../assets/images/logo.svg';
 
-const SignIn = () => (
-  <Container>
-    <Form>
-      <Logo src={logo} alt="" />
+class SignIn extends Component {
+  static propTypes = {
+    signInRequest: PropTypes.func.isRequired,
+  };
 
-      <input type="text" id="email" name="email" placeholder="Seu e-mail" />
+  state = {
+    email: '',
+    password: '',
+  };
 
-      <input type="password" id="password" name="password" placeholder="Senha secreta" />
+  handleSubmit = (e) => {
+    e.preventDefault();
 
-      <Button type="submit">Entrar</Button>
-    </Form>
-  </Container>
-);
+    const { email, password } = this.state;
+    const { signInRequest } = this.props;
 
-export default SignIn;
+    signInRequest(email, password);
+  };
+
+  handleInputChange = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  };
+
+  render() {
+    const { email, password } = this.state;
+
+    return (
+      <Container>
+        <Form onSubmit={this.handleSubmit}>
+          <Logo src={logo} alt="" />
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Seu e-mail"
+            value={email}
+            onChange={this.handleInputChange}
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Senha secreta"
+            value={password}
+            onChange={this.handleInputChange}
+          />
+
+          <Button type="submit">Entrar</Button>
+        </Form>
+      </Container>
+    );
+  }
+}
+
+const mapDispatchToProps = dispatch => bindActionCreators(AuthActions, dispatch);
+
+export default connect(null, mapDispatchToProps)(SignIn);
