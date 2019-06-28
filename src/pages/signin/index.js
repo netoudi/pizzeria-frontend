@@ -1,10 +1,19 @@
 import React from 'react';
 
-import { Container } from './styles';
+import { Button, Container, Form, Logo } from './styles';
+import logo from '../../assets/images/logo.svg';
 
 const SignIn = () => (
   <Container>
-    <h1>SignIn</h1>
+    <Form>
+      <Logo src={logo} alt="" />
+
+      <input type="text" id="email" name="email" placeholder="Seu e-mail" />
+
+      <input type="password" id="password" name="password" placeholder="Senha secreta" />
+
+      <Button type="submit">Entrar</Button>
+    </Form>
   </Container>
 );
 
