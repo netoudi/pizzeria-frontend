@@ -1,44 +1,110 @@
-import React from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import moment from 'moment';
+import 'moment/locale/pt-br';
+
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import OrderActions from '../../store/ducks/order';
 
 import { Container, Description, Header, Order, OrderItem, ProductItem, Products } from './styles';
-import image from '../../assets/images/fundo.jpg';
 
-const Dashboard = () => (
-  <Container>
-    <Order>
-      <h1>Últimos pedidos</h1>
+moment.locale('pt-BR');
 
-      {[1, 2, 3].map(o => (
-        <OrderItem key={o}>
-          <Header>
-            <h2>Pedido #3 - Fulano da Silva</h2>
-            <p>há 2 segundos</p>
-            <span>R$ 42,97</span>
-          </Header>
+class Dashboard extends Component {
+  static propTypes = {
+    getOrderRequest: PropTypes.func.isRequired,
+    order: PropTypes.shape({
+      loading: PropTypes.bool,
+      data: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.number,
+        value_total: PropTypes.number,
+        description: PropTypes.string,
+        created_at: PropTypes.string,
+        user: PropTypes.shape({
+          name: PropTypes.string,
+        }),
+        items: PropTypes.arrayOf(PropTypes.shape({
+          id: PropTypes.number,
+          value_total: PropTypes.number,
+          variant: PropTypes.shape({
+            title: PropTypes.string,
+            image_url: PropTypes.string,
+            product: PropTypes.shape({
+              title: PropTypes.string,
+              image_url: PropTypes.string,
+            }),
+          }),
+        })),
+      })),
+    }).isRequired,
+  };
 
-          <Products>
-            {[...Array(o * 3).keys()].map(p => (
-              <ProductItem key={p}>
-                <div>
-                  <img src={image} alt="" />
-                </div>
-                <div>
-                  <h3>Pizza Calabreza</h3>
-                  <p>Grande</p>
-                  <span>R$ 42,97</span>
-                </div>
-              </ProductItem>
-            ))}
-          </Products>
+  componentDidMount() {
+    const { getOrderRequest } = this.props;
 
-          <Description>
-            <strong>Observações: </strong>
-            Favor remover o tomate da pizza
-          </Description>
-        </OrderItem>
-      ))}
-    </Order>
-  </Container>
-);
+    getOrderRequest();
+  }
 
-export default Dashboard;
+  timeAgo = datetime => moment(datetime, 'YYYY-MM-DD HH:mm:ss').fromNow();
+
+  render() {
+    const { order } = this.props;
+
+    if (order.loading) {
+      return (
+        <Container>
+          <Order>
+            <h1>Carregando...</h1>
+          </Order>
+        </Container>
+      );
+    }
+
+    return (
+      <Container>
+        <Order>
+          <h1>Últimos pedidos</h1>
+
+          {order.data.map(o => (
+            <OrderItem key={o.id}>
+              <Header>
+                <h2>{`Pedido #${o.id} - ${o.user.name}`}</h2>
+                <p>{this.timeAgo(o.created_at)}</p>
+                <span>{`R$ ${o.value_total}`}</span>
+              </Header>
+
+              <Products>
+                {o.items.map(p => (
+                  <ProductItem key={p.id}>
+                    <div>
+                      <img src={p.variant.image_url || p.variant.product.image_url} alt="" />
+                    </div>
+                    <div>
+                      <h3>{p.variant.product.title}</h3>
+                      <p>{p.variant.title}</p>
+                      <span>{`R$ ${p.value_total}`}</span>
+                    </div>
+                  </ProductItem>
+                ))}
+              </Products>
+
+              <Description>
+                <strong>Observações: </strong>
+                {o.description}
+              </Description>
+            </OrderItem>
+          ))}
+        </Order>
+      </Container>
+    );
+  }
+}
+
+const mapStateToProps = state => ({
+  order: state.order,
+});
+
+const mapDispatchToProps = dispatch => bindActionCreators(OrderActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
