@@ -16,7 +16,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     text-rendering: optimizeLegibility !important;
     -webkit-font-smoothing: antialiased !important;
-    background: #fff;
+    background: #f6f6f6;
     font-family: 'Helvetica', sans-serif;
     color: #333;
   }

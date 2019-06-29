@@ -1,21 +1,30 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Redirect, Route } from 'react-router-dom';
+import { MenuTypes } from '../store/ducks/menu';
 
 import store from '../store';
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
-    render={props => (store.getState().auth.signedIn ? (
-      <Component {...props} />
-    ) : (
-      <Redirect to={{
-        pathname: '/signin',
-        state: { from: props.location },
-      }}
-      />
-    ))}
+    render={(props) => {
+      if (!store.getState().auth.signedIn) {
+        return (
+          <Redirect to={{
+            pathname: '/signin',
+            state: { from: props.location },
+          }}
+          />
+        );
+      }
+
+      if (!store.getState().menu.visible) {
+        store.dispatch({ type: MenuTypes.SHOW });
+      }
+
+      return <Component {...props} />;
+    }}
   />
 );
 
